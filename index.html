@@ -26,7 +26,14 @@
     text-align:center; padding:6vh 6vw;
     color:var(--cream);
   }
-  .screen.active{display:flex;}
+  .screen.active{display:flex; animation:telaEntra 0.55s cubic-bezier(.16,1,.3,1) both;}
+  @keyframes telaEntra{
+    from{opacity:0; transform:translateY(30px) scale(0.97);}
+    to{opacity:1; transform:translateY(0) scale(1);}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .screen.active{animation:none;}
+  }
 
   /* ---------- IDLE ---------- */
   #idle{
@@ -54,7 +61,33 @@
 
   /* ---------- QUESTION ---------- */
   #question{background:var(--cream); color:var(--dark);}
-  #question .progress{font-size:3vw; color:var(--blue); font-weight:700; margin-bottom:3vh;}
+  #question .progress{font-size:3vw; color:var(--blue); font-weight:700; margin-bottom:2vh;}
+  #question .timerWrap{
+    width:60vw; max-width:420px; display:flex; align-items:center; gap:2vw;
+    margin-bottom:3vh;
+  }
+  #question .timerBar{
+    flex:1; height:1.4vh; background:rgba(27,59,111,0.15); border-radius:100px; overflow:hidden;
+  }
+  #question .timerFill{
+    height:100%; width:100%; background:var(--blue); border-radius:100px;
+    transform-origin:left; animation:none;
+  }
+  #question .timerNum{
+    font-size:3.4vw; font-weight:900; color:var(--blue); min-width:2.4ch; text-align:right;
+    font-variant-numeric:tabular-nums;
+  }
+  #question .timerNum.urgente{color:var(--red);}
+  #question .timerFill.urgente{background:var(--red);}
+  @keyframes timerShrink{from{transform:scaleX(1);}to{transform:scaleX(0);}}
+  #questionContent{animation:qEntra 0.45s cubic-bezier(.16,1,.3,1) both;}
+  @keyframes qEntra{
+    from{opacity:0; transform:translateX(28px);}
+    to{opacity:1; transform:translateX(0);}
+  }
+  @media (prefers-reduced-motion: reduce){
+    #questionContent{animation:none;}
+  }
   #question .charada{
     font-size:5.5vw; font-weight:600; line-height:1.35;
     max-width:85vw; margin-bottom:6vh;
@@ -71,14 +104,17 @@
   .opcaoBtn.errada{background:var(--red) !important;}
 
   /* ---------- FEEDBACK ---------- */
-  #feedback{background:var(--cream); color:var(--dark);}
-  #feedback .resultado{font-size:7vw; font-weight:900; margin-bottom:4vh;}
-  #feedback .resultado.acertou{color:var(--green);}
-  #feedback .resultado.errou{color:var(--red);}
+  #feedback{background:var(--cream); color:var(--dark); transition:background 0.25s, color 0.25s;}
+  #feedback.acertou{background:var(--green); color:var(--cream);}
+  #feedback.errou{background:var(--red); color:var(--cream);}
+  #feedback .resultado{font-size:7vw; font-weight:900; margin-bottom:4vh; color:inherit;}
   #feedback .resposta{font-size:4vw; margin-bottom:3vh; font-weight:700;}
   #feedback .curiosidade{
     font-size:3.4vw; max-width:80vw; line-height:1.5;
-    background:rgba(27,59,111,0.08); padding:3vh 4vw; border-radius:18px;
+    background:rgba(0,0,0,0.15); padding:3vh 4vw; border-radius:18px;
+  }
+  #feedback.errou .curiosidade, #feedback.acertou .curiosidade{
+    background:rgba(255,255,255,0.18);
   }
 
   /* ---------- FINAL ---------- */
@@ -91,6 +127,12 @@
     margin-bottom:4vh; padding:2vw;
   }
   #final .qrBox img{width:100%; height:100%; object-fit:contain;}
+  #final .qrBox{animation:qrPulso 1.6s infinite ease-in-out;}
+  @keyframes qrPulso{0%,100%{box-shadow:0 0 0 rgba(232,163,61,0);}50%{box-shadow:0 0 0 14px rgba(232,163,61,0.15);}}
+  @media (prefers-reduced-motion: reduce){
+    #final .qrBox{animation:none;}
+  }
+  #final .scanPrompt{font-size:4.2vw; font-weight:700; color:var(--cream); margin-bottom:3vh; max-width:80vw;}
   #final .instagram{font-size:4vw; color:var(--cream); font-weight:700; margin-bottom:2vh;}
   #final .brinde{font-size:3.6vw; color:var(--gold); font-weight:700;}
   #final .barra{
@@ -115,8 +157,14 @@
 <!-- ============ TELA PERGUNTA ============ -->
 <div id="question" class="screen">
   <div class="progress" id="progressText">Pergunta 1 de 3</div>
-  <div class="charada" id="charadaText"></div>
-  <div class="opcoes" id="opcoesContainer"></div>
+  <div class="timerWrap">
+    <div class="timerNum" id="timerNum">10</div>
+    <div class="timerBar"><div class="timerFill" id="timerFill"></div></div>
+  </div>
+  <div id="questionContent">
+    <div class="charada" id="charadaText"></div>
+    <div class="opcoes" id="opcoesContainer"></div>
+  </div>
 </div>
 
 <!-- ============ TELA FEEDBACK ============ -->
@@ -130,6 +178,7 @@
 <div id="final" class="screen">
   <h1>Você terminou!</h1>
   <div class="placar" id="placarText"></div>
+  <div class="scanPrompt" id="scanPrompt">📱 Escaneie o QR Code abaixo para retirar seu brinde!</div>
   <div class="qrBox"><img id="qrImg" src="qrcode-instagram.png" alt="QR Code Instagram"></div>
   <div class="instagram" id="instaHandle">@pasturce</div>
   <div class="brinde" id="brindeText">Mostre essa tela e retire seu brinde! 🎁</div>
@@ -145,13 +194,14 @@ const CONFIG = {
   brandSubtitle: "Pastoral do Turismo",
   instagramHandle: "@pasturce",
   qrImagePath: "qrcode-instagram.png",   // troque pelo arquivo do QR code real
+  scanPrompt: "📱 Escaneie o QR Code abaixo para retirar seu brinde!",
   brindeMensagem: "Mostre essa tela e retire seu brinde! 🎁",
 
-  idleTimeoutQuestion: 20,   // segundos sem toque na tela de pergunta -> volta pro idle
-  finalScreenDuration: 12,   // segundos que a tela final fica visível antes de voltar
+  tempoPorPergunta: 10,      // segundos que a pessoa tem para responder cada pergunta
+  finalScreenDuration: 25,   // segundos que a tela final fica visível (tempo pra escanear o QR)
   feedbackDuration: 4,       // segundos que o feedback fica visível antes da próxima pergunta
 
-  perguntasPorRodada: 3,     // quantas perguntas por sessão de jogo
+  perguntasPorRodada: 5,     // quantas perguntas por sessão de jogo
 
   frasesIdle: [
     "A PASTUR une fé, turismo e acolhimento em um só caminho.",
@@ -262,6 +312,108 @@ const CONFIG = {
       opcoes: ["Sino", "Vitral", "Órgão"],
       correta: 0,
       curiosidade: "O toque dos sinos é uma tradição que atravessa séculos na vida das igrejas católicas."
+    },
+    {
+      charada: "Sou o livro sagrado da fé cristã, dividido em Antigo e Novo Testamento. Quem sou eu?",
+      opcoes: ["Bíblia", "Catecismo", "Missal"],
+      correta: 0,
+      curiosidade: "A Bíblia é a base de toda a formação espiritual proposta nos roteiros de fé da PASTUR."
+    },
+    {
+      charada: "Sou a celebração central da fé católica, na qual o padre consagra o pão e o vinho diante dos fiéis. Quem sou eu?",
+      opcoes: ["Missa", "Novena", "Procissão"],
+      correta: 0,
+      curiosidade: "A missa é o coração da vida litúrgica em qualquer igreja da Arquidiocese de Fortaleza."
+    },
+    {
+      charada: "Sou a data em que a Igreja celebra o nascimento de Jesus Cristo. Quem sou eu?",
+      opcoes: ["Natal", "Páscoa", "Pentecostes"],
+      correta: 0,
+      curiosidade: "O Natal reúne famílias e movimenta as igrejas com novenas e celebrações especiais."
+    },
+    {
+      charada: "Sou a festa que celebra a Ressurreição de Jesus Cristo, o ponto mais alto do calendário cristão. Quem sou eu?",
+      opcoes: ["Páscoa", "Natal", "Corpus Christi"],
+      correta: 0,
+      curiosidade: "A Páscoa é precedida pela Semana Santa, um dos períodos de maior movimento no turismo religioso."
+    },
+    {
+      charada: "Sou o desfile religioso que sai pelas ruas carregando imagens e símbolos de fé. Quem sou eu?",
+      opcoes: ["Procissão", "Missa", "Retiro"],
+      correta: 0,
+      curiosidade: "As procissões fazem parte de vários roteiros de fé mapeados pela PASTUR em Fortaleza."
+    },
+    {
+      charada: "Sou a mãe de Jesus, uma das figuras mais veneradas da fé católica em todo o mundo. Quem sou eu?",
+      opcoes: ["Virgem Maria", "Santa Luzia", "Santa Teresinha"],
+      correta: 0,
+      curiosidade: "A tradicional Caminhada com Maria homenageia justamente essa devoção em Fortaleza."
+    },
+    {
+      charada: "Sou o instrumento musical de tubos que costuma tocar nas missas mais solenes das igrejas. Quem sou eu?",
+      opcoes: ["Órgão", "Sino", "Violão"],
+      correta: 0,
+      curiosidade: "O som do órgão é marca registrada das celebrações mais solenes da Catedral Metropolitana."
+    },
+    {
+      charada: "Sou o período de 40 dias de preparação espiritual antes da Páscoa, marcado por jejum e reflexão. Quem sou eu?",
+      opcoes: ["Quaresma", "Advento", "Pentecostes"],
+      correta: 0,
+      curiosidade: "É durante a Quaresma que acontece a tradicional Caminhada Penitencial em Fortaleza."
+    },
+    {
+      charada: "Sou o período de preparação para o Natal, marcado por quatro semanas de espera e reflexão. Quem sou eu?",
+      opcoes: ["Advento", "Quaresma", "Trindade"],
+      correta: 0,
+      curiosidade: "O Advento é um convite à espera ativa, cheio de novenas e celebrações nas paróquias."
+    },
+    {
+      charada: "Sou a capital do Ceará, terra de praias e também de fé, sede da Arquidiocese que criou a PASTUR. Quem sou eu?",
+      opcoes: ["Fortaleza", "Sobral", "Juazeiro do Norte"],
+      correta: 0,
+      curiosidade: "Fortaleza reúne igrejas históricas, festas e roteiros que formam a espinha dorsal da PASTUR."
+    },
+    {
+      charada: "Sou o gesto de tocar a testa, o peito e os ombros em nome do Pai, do Filho e do Espírito Santo. Quem sou eu?",
+      opcoes: ["Sinal da Cruz", "Bênção", "Genuflexão"],
+      correta: 0,
+      curiosidade: "O Sinal da Cruz é o gesto mais repetido por um católico, do início ao fim do dia."
+    },
+    {
+      charada: "Fico na entrada da igreja e guardo a água benta que os fiéis usam para se persignar. Quem sou eu?",
+      opcoes: ["Pia de água benta", "Batistério", "Sacrário"],
+      correta: 0,
+      curiosidade: "É comum encontrar uma pia de água benta logo na entrada das igrejas visitadas nos roteiros da PASTUR."
+    },
+    {
+      charada: "Sou o dia da semana reservado para a missa mais importante, quando os católicos se reúnem para celebrar juntos. Quem sou eu?",
+      opcoes: ["Domingo", "Sexta-feira", "Quarta-feira"],
+      correta: 0,
+      curiosidade: "O domingo é chamado de \"dia do Senhor\" na tradição católica."
+    },
+    {
+      charada: "Sou a imagem de Jesus na cruz, símbolo maior da fé cristã, presente no altar de toda igreja católica. Quem sou eu?",
+      opcoes: ["Crucifixo", "Vitral", "Círio"],
+      correta: 0,
+      curiosidade: "O crucifixo é um dos primeiros elementos que chamam atenção de quem visita uma igreja pela primeira vez."
+    },
+    {
+      charada: "Sou o pão e o vinho consagrados na missa, recebidos pelos católicos como corpo e sangue de Cristo. Quem sou eu?",
+      opcoes: ["Eucaristia", "Batismo", "Crisma"],
+      correta: 0,
+      curiosidade: "A Eucaristia é considerada o sacramento central da vida católica."
+    },
+    {
+      charada: "Sou um dos sete sacramentos da Igreja, celebrado logo no início da vida, quando a pessoa entra oficialmente na fé cristã. Quem sou eu?",
+      opcoes: ["Batismo", "Crisma", "Eucaristia"],
+      correta: 0,
+      curiosidade: "Muitas famílias escolhem igrejas históricas de Fortaleza para celebrar o batismo dos filhos."
+    },
+    {
+      charada: "Sou a cor usada pelos padres durante a Quaresma e o Advento, símbolo de penitência e preparação. Quem sou eu?",
+      opcoes: ["Roxo", "Verde", "Vermelho"],
+      correta: 0,
+      curiosidade: "As cores litúrgicas ajudam os fiéis a reconhecer o momento do calendário da Igreja."
     }
   ]
 };
@@ -273,12 +425,88 @@ let perguntasEmbaralhadas = [];
 let indiceAtual = 0;
 let acertos = 0;
 let timers = [];
+let timerInterval = null;
 
 const el = id => document.getElementById(id);
 
 function limparTimers(){
   timers.forEach(t => clearTimeout(t));
   timers = [];
+  if(timerInterval){
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+}
+
+/* =========================================================
+   ÁUDIO — música de fundo e efeitos sonoros (Web Audio API)
+   ========================================================= */
+let audioCtx = null;
+let musicaTimer = null;
+
+function iniciarAudio(){
+  if(!audioCtx){
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if(audioCtx.state === 'suspended'){
+    audioCtx.resume();
+  }
+}
+
+function tocarNota(freq, duracao, tipo, volume, quando){
+  if(!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = tipo;
+  osc.frequency.value = freq;
+  const inicio = audioCtx.currentTime + quando;
+  gain.gain.setValueAtTime(0.0001, inicio);
+  gain.gain.exponentialRampToValueAtTime(volume, inicio + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, inicio + duracao);
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start(inicio);
+  osc.stop(inicio + duracao + 0.05);
+}
+
+const MELODIA_FUNDO = [523.25, 659.25, 783.99, 659.25, 523.25, 659.25, 783.99, 1046.50];
+const BAIXO_FUNDO = [130.81, 130.81, 164.81, 164.81];
+
+function agendarLoopMusica(){
+  if(!audioCtx) return;
+  const tempoNota = 0.3;
+  MELODIA_FUNDO.forEach((freq, i) => tocarNota(freq, tempoNota * 0.85, 'square', 0.045, i * tempoNota));
+  const duracaoTotal = MELODIA_FUNDO.length * tempoNota;
+  BAIXO_FUNDO.forEach((freq, i) => tocarNota(freq, (duracaoTotal / BAIXO_FUNDO.length) * 0.9, 'triangle', 0.06, i * (duracaoTotal / BAIXO_FUNDO.length)));
+  musicaTimer = setTimeout(agendarLoopMusica, duracaoTotal * 1000);
+}
+
+function iniciarMusica(){
+  iniciarAudio();
+  if(musicaTimer) return;
+  agendarLoopMusica();
+}
+
+function pararMusica(){
+  if(musicaTimer){
+    clearTimeout(musicaTimer);
+    musicaTimer = null;
+  }
+}
+
+function tocarAcerto(){
+  iniciarAudio();
+  [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => tocarNota(f, 0.2, 'square', 0.09, i * 0.09));
+}
+
+function tocarErro(){
+  iniciarAudio();
+  tocarNota(196.00, 0.4, 'sawtooth', 0.08, 0);
+  tocarNota(146.83, 0.45, 'sawtooth', 0.08, 0.08);
+}
+
+function tocarTique(){
+  iniciarAudio();
+  tocarNota(880, 0.09, 'square', 0.05, 0);
 }
 
 function mostrarTela(id){
@@ -297,6 +525,7 @@ function embaralhar(array){
 
 function iniciarIdle(){
   limparTimers();
+  pararMusica();
   mostrarTela('idle');
   rotacionarFrasesIdle();
 }
@@ -316,6 +545,7 @@ function rotacionarFrasesIdle(){
 
 function iniciarJogo(){
   limparTimers();
+  iniciarMusica();
   perguntasEmbaralhadas = embaralhar(CONFIG.perguntas).slice(0, CONFIG.perguntasPorRodada);
   indiceAtual = 0;
   acertos = 0;
@@ -340,22 +570,55 @@ function mostrarPergunta(){
   });
 
   mostrarTela('question');
-
-  const t = setTimeout(iniciarIdle, CONFIG.idleTimeoutQuestion * 1000);
-  timers.push(t);
+  iniciarTemporizador(container);
 }
 
-function responder(correta, btnClicado, container){
+function iniciarTemporizador(container){
+  let restante = CONFIG.tempoPorPergunta;
+  const fill = el('timerFill');
+  const num = el('timerNum');
+
+  num.textContent = restante;
+  num.classList.remove('urgente');
+  fill.classList.remove('urgente');
+  fill.style.animation = 'none';
+  void fill.offsetWidth;
+  fill.style.animation = `timerShrink ${CONFIG.tempoPorPergunta}s linear forwards`;
+
+  timerInterval = setInterval(() => {
+    restante--;
+    num.textContent = Math.max(restante, 0);
+    if(restante <= 3 && restante > 0){
+      num.classList.add('urgente');
+      fill.classList.add('urgente');
+      tocarTique();
+    }
+    if(restante <= 0){
+      clearInterval(timerInterval);
+      timerInterval = null;
+      responder(false, null, container, true);
+    }
+  }, 1000);
+}
+
+function responder(correta, btnClicado, container, esgotado){
   limparTimers();
   container.querySelectorAll('.opcaoBtn').forEach(b => b.onclick = null);
   const p = perguntasEmbaralhadas[indiceAtual];
 
   if(correta) acertos++;
-  btnClicado.classList.add(correta ? 'correta' : 'errada');
+  if(btnClicado) btnClicado.classList.add(correta ? 'correta' : 'errada');
+
+  if(correta){
+    tocarAcerto();
+  } else {
+    tocarErro();
+  }
 
   const t1 = setTimeout(() => {
-    el('resultadoText').textContent = correta ? 'Você acertou! 🎉' : 'Quase lá!';
-    el('resultadoText').className = 'resultado ' + (correta ? 'acertou' : 'errou');
+    el('resultadoText').textContent = correta ? 'Você acertou! 🎉' : (esgotado ? 'Tempo esgotado! ⏰' : 'Quase lá!');
+    el('feedback').classList.remove('acertou', 'errou');
+    el('feedback').classList.add(correta ? 'acertou' : 'errou');
     el('respostaText').textContent = 'Resposta: ' + p.opcoes[p.correta];
     el('curiosidadeText').textContent = p.curiosidade;
     mostrarTela('feedback');
@@ -375,7 +638,9 @@ function responder(correta, btnClicado, container){
 
 function mostrarFinal(){
   limparTimers();
+  pararMusica();
   el('placarText').textContent = `${acertos} / ${perguntasEmbaralhadas.length}`;
+  el('scanPrompt').textContent = CONFIG.scanPrompt;
   el('instaHandle').textContent = CONFIG.instagramHandle;
   el('brindeText').textContent = CONFIG.brindeMensagem;
   el('qrImg').src = CONFIG.qrImagePath;

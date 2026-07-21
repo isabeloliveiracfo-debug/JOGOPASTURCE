@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>PASTUR — Adivinha Quem Sou Eu?</title>
+<style>
+  :root{
+    --gold:#E8A33D;
+    --dark:#241708;
+    --cream:#FBF3E4;
+    --green:#2E8B57;
+    --red:#C0392B;
+    --blue:#1B3B6F;
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; user-select:none;}
+  html,body{
+    width:100vw; height:100vh; overflow:hidden;
+    font-family:'Segoe UI', Arial, sans-serif;
+    background:var(--dark);
+  }
+  .screen{
+    position:absolute; inset:0;
+    display:none; flex-direction:column;
+    align-items:center; justify-content:center;
+    text-align:center; padding:6vh 6vw;
+    color:var(--cream);
+  }
+  .screen.active{display:flex;}
+
+  /* ---------- IDLE ---------- */
+  #idle{
+    background:linear-gradient(180deg, var(--dark) 0%, #3a2a12 100%);
+    cursor:pointer;
+  }
+  #idle .logo{
+    width:36vw; height:36vw; border-radius:50%;
+    background:var(--gold);
+    display:flex; align-items:center; justify-content:center;
+    font-size:6vw; font-weight:900; color:var(--dark);
+    margin-bottom:5vh; box-shadow:0 0 60px rgba(232,163,61,0.5);
+    animation:pulse 2.5s infinite ease-in-out;
+  }
+  @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}
+  #idle h1{font-size:8vw; color:var(--gold); margin-bottom:2vh; letter-spacing:2px;}
+  #idle h2{font-size:4vw; font-weight:400; margin-bottom:6vh; opacity:0.9;}
+  #idleRotator{font-size:3.2vw; min-height:12vh; max-width:80vw; opacity:0.85; transition:opacity 0.6s;}
+  #idle .cta{
+    margin-top:8vh; font-size:4vw; font-weight:700; color:var(--dark);
+    background:var(--gold); padding:2.5vh 6vw; border-radius:100px;
+    animation:bounce 1.8s infinite;
+  }
+  @keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-15px);}}
+
+  /* ---------- QUESTION ---------- */
+  #question{background:var(--cream); color:var(--dark);}
+  #question .progress{font-size:3vw; color:var(--blue); font-weight:700; margin-bottom:3vh;}
+  #question .charada{
+    font-size:5.5vw; font-weight:600; line-height:1.35;
+    max-width:85vw; margin-bottom:6vh;
+  }
+  #question .opcoes{width:100%; display:flex; flex-direction:column; gap:3vh; max-width:80vw;}
+  .opcaoBtn{
+    font-size:4vw; font-weight:700; padding:4vh 3vw;
+    background:var(--blue); color:var(--cream);
+    border:none; border-radius:20px; cursor:pointer;
+    transition:transform 0.15s;
+  }
+  .opcaoBtn:active{transform:scale(0.96);}
+  .opcaoBtn.correta{background:var(--green) !important;}
+  .opcaoBtn.errada{background:var(--red) !important;}
+
+  /* ---------- FEEDBACK ---------- */
+  #feedback{background:var(--cream); color:var(--dark);}
+  #feedback .resultado{font-size:7vw; font-weight:900; margin-bottom:4vh;}
+  #feedback .resultado.acertou{color:var(--green);}
+  #feedback .resultado.errou{color:var(--red);}
+  #feedback .resposta{font-size:4vw; margin-bottom:3vh; font-weight:700;}
+  #feedback .curiosidade{
+    font-size:3.4vw; max-width:80vw; line-height:1.5;
+    background:rgba(27,59,111,0.08); padding:3vh 4vw; border-radius:18px;
+  }
+
+  /* ---------- FINAL ---------- */
+  #final{background:linear-gradient(180deg, var(--dark) 0%, #3a2a12 100%);}
+  #final h1{font-size:6vw; color:var(--gold); margin-bottom:3vh;}
+  #final .placar{font-size:10vw; font-weight:900; margin-bottom:4vh;}
+  #final .qrBox{
+    width:32vw; height:32vw; background:#fff; border-radius:20px;
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom:4vh; padding:2vw;
+  }
+  #final .qrBox img{width:100%; height:100%; object-fit:contain;}
+  #final .instagram{font-size:4vw; color:var(--cream); font-weight:700; margin-bottom:2vh;}
+  #final .brinde{font-size:3.6vw; color:var(--gold); font-weight:700;}
+  #final .barra{
+    position:absolute; bottom:0; left:0; height:1.2vh; background:var(--gold);
+    width:100%; transform-origin:left; animation:none;
+  }
+
+  @keyframes shrink{from{transform:scaleX(1);}to{transform:scaleX(0);}}
+</style>
+</head>
+<body>
+
+<!-- ============ TELA IDLE ============ -->
+<div id="idle" class="screen active">
+  <div class="logo">✝</div>
+  <h1 id="brandName">PASTUR</h1>
+  <h2 id="brandSubtitle">Pastoral do Turismo</h2>
+  <div id="idleRotator"></div>
+  <div class="cta">TOQUE PARA JOGAR</div>
+</div>
+
+<!-- ============ TELA PERGUNTA ============ -->
+<div id="question" class="screen">
+  <div class="progress" id="progressText">Pergunta 1 de 3</div>
+  <div class="charada" id="charadaText"></div>
+  <div class="opcoes" id="opcoesContainer"></div>
+</div>
+
+<!-- ============ TELA FEEDBACK ============ -->
+<div id="feedback" class="screen">
+  <div class="resultado" id="resultadoText"></div>
+  <div class="resposta" id="respostaText"></div>
+  <div class="curiosidade" id="curiosidadeText"></div>
+</div>
+
+<!-- ============ TELA FINAL ============ -->
+<div id="final" class="screen">
+  <h1>Você terminou!</h1>
+  <div class="placar" id="placarText"></div>
+  <div class="qrBox"><img id="qrImg" src="qrcode-instagram.png" alt="QR Code Instagram"></div>
+  <div class="instagram" id="instaHandle">@pasturce</div>
+  <div class="brinde" id="brindeText">Mostre essa tela e retire seu brinde! 🎁</div>
+  <div class="barra" id="barraFinal"></div>
+</div>
+
+<script>
+/* =========================================================
+   CONFIGURAÇÃO — edite tudo aqui, sem mexer no resto do código
+   ========================================================= */
+const CONFIG = {
+  brandName: "PASTUR",
+  brandSubtitle: "Pastoral do Turismo",
+  instagramHandle: "@pasturce",
+  qrImagePath: "qrcode-instagram.png",   // troque pelo arquivo do QR code real
+  brindeMensagem: "Mostre essa tela e retire seu brinde! 🎁",
+
+  idleTimeoutQuestion: 20,   // segundos sem toque na tela de pergunta -> volta pro idle
+  finalScreenDuration: 12,   // segundos que a tela final fica visível antes de voltar
+  feedbackDuration: 4,       // segundos que o feedback fica visível antes da próxima pergunta
+
+  perguntasPorRodada: 3,     // quantas perguntas por sessão de jogo
+
+  frasesIdle: [
+    "A PASTUR une fé, turismo e acolhimento em um só caminho.",
+    "Já pensou em conhecer os 300 anos de fé de Fortaleza?",
+    "Acolher é evangelizar. Venha fazer parte dessa jornada.",
+    "Descubra os roteiros de fé da Arquidiocese de Fortaleza."
+  ],
+
+  perguntas: [
+    {
+      charada: "Tenho torres altas, vitrais coloridos, e sou o ponto de chegada de quase todos os roteiros de fé em Fortaleza. Quem sou eu?",
+      opcoes: ["Catedral Metropolitana de Fortaleza", "Igreja do Rosário", "Igreja da Messejana"],
+      correta: 0,
+      curiosidade: "A Catedral Metropolitana é o coração de vários roteiros religiosos da cidade, incluindo a Caminhada com Maria."
+    },
+    {
+      charada: "Fico na Barra do Ceará e sou o ponto de partida da tradicional Caminhada com Maria. Quem sou eu?",
+      opcoes: ["Santuário N. Sra. de Fátima", "Santuário N. Sra. da Assunção", "Igreja de Santa Edwirges"],
+      correta: 1,
+      curiosidade: "O percurso da Caminhada com Maria liga vários templos históricos até a Catedral Metropolitana."
+    },
+    {
+      charada: "Minha festa acontece no Mucuripe e celebro o padroeiro dos pescadores. Quem sou eu?",
+      opcoes: ["Festa de São Pedro", "Festa de São José", "Festa de Santa Luzia"],
+      correta: 0,
+      curiosidade: "A Festa de São Pedro é uma das celebrações católicas mais tradicionais de Fortaleza."
+    },
+    {
+      charada: "Sou uma pastoral nova na Arquidiocese de Fortaleza. Uno fé, turismo e acolhimento num só caminho. Quem sou eu?",
+      opcoes: ["PASTUR", "Pastoral da Catequese", "Pastoral da Juventude"],
+      correta: 0,
+      curiosidade: "A PASTUR é uma parceria entre a Arquidiocese de Fortaleza e o Governo do Estado do Ceará."
+    },
+    {
+      charada: "Todo terceiro domingo da Quaresma, reúno multidões que caminham da Igreja da Saúde até a Catedral. Quem sou eu?",
+      opcoes: ["Caminhada Penitencial", "Festival Halleluya", "Romaria de Juazeiro"],
+      correta: 0,
+      curiosidade: "Esse já é um evento fixo no calendário da fé em Fortaleza."
+    },
+    {
+      charada: "Sou um dos maiores festivais de música católica da América Latina e aconteço todo mês de julho. Quem sou eu?",
+      opcoes: ["Festival Halleluya", "Festa do Bom Jesus", "Festejos de São José"],
+      correta: 0,
+      curiosidade: "O Festival Halleluya é promovido pela Comunidade Católica Shalom e reúne shows, ações solidárias e evangelização."
+    },
+    {
+      charada: "Minha cidade é conhecida pela devoção a Padre Cícero e sou a porta de entrada da fé no interior do Ceará. Quem sou eu?",
+      opcoes: ["Juazeiro do Norte", "Canindé", "Quixadá"],
+      correta: 0,
+      curiosidade: "Fortaleza é considerada a porta de entrada da fé católica no Ceará, ligando-se a vários destinos do interior."
+    },
+    {
+      charada: "Sou a atitude que Jesus tinha antes mesmo de ensinar: escutava, se aproximava, fazia a pessoa se sentir amada. Quem sou eu?",
+      opcoes: ["Acolhimento", "Catequese", "Liturgia"],
+      correta: 0,
+      curiosidade: "Acolher é evangelizar — esse é um dos valores centrais da PASTUR."
+    },
+    {
+      charada: "Sou o nome de quem viaja em busca de um encontro com Deus — carrego fé na bagagem. Quem sou eu?",
+      opcoes: ["Peregrino", "Turista", "Guia"],
+      correta: 0,
+      curiosidade: "Na PASTUR, todo visitante é convidado a se tornar um peregrino."
+    }
+  ]
+};
+
+/* =========================================================
+   LÓGICA DO APLICATIVO — não precisa editar daqui pra baixo
+   ========================================================= */
+let perguntasEmbaralhadas = [];
+let indiceAtual = 0;
+let acertos = 0;
+let timers = [];
+
+const el = id => document.getElementById(id);
+
+function limparTimers(){
+  timers.forEach(t => clearTimeout(t));
+  timers = [];
+}
+
+function mostrarTela(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  el(id).classList.add('active');
+}
+
+function embaralhar(array){
+  const a = [...array];
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function iniciarIdle(){
+  limparTimers();
+  mostrarTela('idle');
+  rotacionarFrasesIdle();
+}
+
+let idleFraseIndex = 0;
+function rotacionarFrasesIdle(){
+  const rotator = el('idleRotator');
+  rotator.style.opacity = 0;
+  setTimeout(() => {
+    rotator.textContent = CONFIG.frasesIdle[idleFraseIndex % CONFIG.frasesIdle.length];
+    rotator.style.opacity = 0.85;
+    idleFraseIndex++;
+  }, 400);
+  const t = setTimeout(rotacionarFrasesIdle, 4500);
+  timers.push(t);
+}
+
+function iniciarJogo(){
+  limparTimers();
+  perguntasEmbaralhadas = embaralhar(CONFIG.perguntas).slice(0, CONFIG.perguntasPorRodada);
+  indiceAtual = 0;
+  acertos = 0;
+  mostrarPergunta();
+}
+
+function mostrarPergunta(){
+  limparTimers();
+  const p = perguntasEmbaralhadas[indiceAtual];
+  el('progressText').textContent = `Pergunta ${indiceAtual + 1} de ${perguntasEmbaralhadas.length}`;
+  el('charadaText').textContent = p.charada;
+
+  const container = el('opcoesContainer');
+  container.innerHTML = '';
+  const opcoesEmbaralhadas = p.opcoes.map((texto, idx) => ({texto, correta: idx === p.correta}));
+  embaralhar(opcoesEmbaralhadas).forEach(op => {
+    const btn = document.createElement('button');
+    btn.className = 'opcaoBtn';
+    btn.textContent = op.texto;
+    btn.onclick = () => responder(op.correta, btn, container);
+    container.appendChild(btn);
+  });
+
+  mostrarTela('question');
+
+  const t = setTimeout(iniciarIdle, CONFIG.idleTimeoutQuestion * 1000);
+  timers.push(t);
+}
+
+function responder(correta, btnClicado, container){
+  limparTimers();
+  container.querySelectorAll('.opcaoBtn').forEach(b => b.onclick = null);
+  const p = perguntasEmbaralhadas[indiceAtual];
+
+  if(correta) acertos++;
+  btnClicado.classList.add(correta ? 'correta' : 'errada');
+
+  const t1 = setTimeout(() => {
+    el('resultadoText').textContent = correta ? 'Você acertou! 🎉' : 'Quase lá!';
+    el('resultadoText').className = 'resultado ' + (correta ? 'acertou' : 'errou');
+    el('respostaText').textContent = 'Resposta: ' + p.opcoes[p.correta];
+    el('curiosidadeText').textContent = p.curiosidade;
+    mostrarTela('feedback');
+
+    const t2 = setTimeout(() => {
+      indiceAtual++;
+      if(indiceAtual < perguntasEmbaralhadas.length){
+        mostrarPergunta();
+      } else {
+        mostrarFinal();
+      }
+    }, CONFIG.feedbackDuration * 1000);
+    timers.push(t2);
+  }, 700);
+  timers.push(t1);
+}
+
+function mostrarFinal(){
+  limparTimers();
+  el('placarText').textContent = `${acertos} / ${perguntasEmbaralhadas.length}`;
+  el('instaHandle').textContent = CONFIG.instagramHandle;
+  el('brindeText').textContent = CONFIG.brindeMensagem;
+  el('qrImg').src = CONFIG.qrImagePath;
+
+  const barra = el('barraFinal');
+  barra.style.animation = 'none';
+  void barra.offsetWidth;
+  barra.style.animation = `shrink ${CONFIG.finalScreenDuration}s linear forwards`;
+
+  mostrarTela('final');
+
+  const t = setTimeout(iniciarIdle, CONFIG.finalScreenDuration * 1000);
+  timers.push(t);
+}
+
+/* Aplica textos de marca configuráveis */
+el('brandName').textContent = CONFIG.brandName;
+el('brandSubtitle').textContent = CONFIG.brandSubtitle;
+
+/* Início: tocar em qualquer lugar da tela idle começa o jogo */
+el('idle').addEventListener('click', iniciarJogo);
+el('idle').addEventListener('touchstart', iniciarJogo);
+
+iniciarIdle();
+</script>
+</body>
+</html>

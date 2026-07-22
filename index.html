@@ -13,12 +13,15 @@
     --red:#C0392B;
     --blue:#1B3B6F;
   }
-  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; user-select:none;}
+  *{box-sizing:border-box; margin:0; padding:0; user-select:none;}
   html,body{
     width:100vw; height:100vh; overflow:hidden;
     font-family:'Segoe UI', Arial, sans-serif;
     background:var(--dark);
   }
+  body.esconderCursor .screen:not(#admin){ cursor:none; }
+  body.esconderCursor .screen:not(#admin) *{ cursor:none; }
+
   .screen{
     position:absolute; inset:0;
     display:none; flex-direction:column;
@@ -38,12 +41,22 @@
   /* ---------- IDLE ---------- */
   #idle{
     background:linear-gradient(180deg, var(--dark) 0%, #3a2a12 100%);
-    cursor:pointer;
+    background-size:cover;
+    background-position:center;
+    padding:0;
+    position:relative;
   }
+  #idle .logo, #idle h1, #idle h2, #idle .cta{ display:none; }
+  #idle:not(.comImagem) .logo,
+  #idle:not(.comImagem) h1,
+  #idle:not(.comImagem) h2,
+  #idle:not(.comImagem) .cta{ display:flex; }
+  #idle:not(.comImagem){ flex-direction:column; align-items:center; justify-content:center; padding:6vh 6vw; }
+
   #idle .logo{
     width:36vw; height:36vw; border-radius:50%;
     background:var(--gold);
-    display:flex; align-items:center; justify-content:center;
+    align-items:center; justify-content:center;
     font-size:6vw; font-weight:900; color:var(--dark);
     margin-bottom:5vh; box-shadow:0 0 60px rgba(232,163,61,0.5);
     animation:pulse 2.5s infinite ease-in-out;
@@ -51,13 +64,38 @@
   @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}
   #idle h1{font-size:8vw; color:var(--gold); margin-bottom:2vh; letter-spacing:2px;}
   #idle h2{font-size:4vw; font-weight:400; margin-bottom:6vh; opacity:0.9;}
-  #idleRotator{font-size:3.2vw; min-height:12vh; max-width:80vw; opacity:0.85; transition:opacity 0.6s;}
   #idle .cta{
-    margin-top:8vh; font-size:4vw; font-weight:700; color:var(--dark);
+    margin-top:8vh; font-size:3.6vw; font-weight:700; color:var(--dark);
     background:var(--gold); padding:2.5vh 6vw; border-radius:100px;
     animation:bounce 1.8s infinite;
   }
   @keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-15px);}}
+
+  #overlayBotao{ position:absolute; display:none; }
+  #idle.comImagem #overlayBotao{ display:block; }
+
+  #idleRotator{
+    position:absolute;
+    font-size:2.4vw; opacity:0.85; transition:opacity 0.6s;
+    color:var(--dark); font-weight:600;
+    width:70%; left:15%; text-align:center;
+  }
+  #idle:not(.comImagem) #idleRotator{
+    position:static; font-size:3.2vw; min-height:12vh; max-width:80vw;
+    color:var(--cream);
+  }
+
+  #contadorBadge{
+    position:absolute;
+    background:rgba(36,23,8,0.85); color:var(--cream);
+    padding:1.2vh 3vw; border-radius:100px; font-size:2vw;
+  }
+  #idle:not(.comImagem) #contadorBadge{
+    position:absolute; bottom:3vh; left:50%; transform:translateX(-50%);
+    background:rgba(251,243,228,0.12);
+    border:1px solid rgba(251,243,228,0.3);
+    font-size:2.3vw;
+  }
 
   /* ---------- QUESTION ---------- */
   #question{background:var(--cream); color:var(--dark);}
@@ -98,6 +136,12 @@
     background:var(--blue); color:var(--cream);
     border:none; border-radius:20px; cursor:pointer;
     transition:transform 0.15s;
+    display:flex; align-items:center; gap:2vw; text-align:left;
+  }
+  .opcaoBtn .numBadge{
+    background:var(--gold); color:var(--dark); font-weight:900;
+    width:5vw; height:5vw; min-width:5vw; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-size:3vw;
   }
   .opcaoBtn:active{transform:scale(0.96);}
   .opcaoBtn.correta{background:var(--green) !important;}
@@ -116,6 +160,7 @@
   #feedback.errou .curiosidade, #feedback.acertou .curiosidade{
     background:rgba(255,255,255,0.18);
   }
+  #feedback .dica{font-size:2.2vw; opacity:0.65; margin-top:4vh;}
 
   /* ---------- FINAL ---------- */
   #final{background:linear-gradient(180deg, var(--dark) 0%, #3a2a12 100%);}
@@ -135,12 +180,38 @@
   #final .scanPrompt{font-size:4.2vw; font-weight:700; color:var(--cream); margin-bottom:3vh; max-width:80vw;}
   #final .instagram{font-size:4vw; color:var(--cream); font-weight:700; margin-bottom:2vh;}
   #final .brinde{font-size:3.6vw; color:var(--gold); font-weight:700;}
+  #final .dica{font-size:2.2vw; opacity:0.5; margin-top:3vh;}
   #final .barra{
     position:absolute; bottom:0; left:0; height:1.2vh; background:var(--gold);
-    width:100%; transform-origin:left; animation:none;
+    width:100%; transform-origin:left;
   }
-
   @keyframes shrink{from{transform:scaleX(1);}to{transform:scaleX(0);}}
+
+  /* ---------- RODAPÉ DE PARCEIROS ---------- */
+  .parceirosFooter{
+    position:absolute; bottom:1.5vh; left:0; width:100%;
+    display:flex; align-items:center; justify-content:center;
+    gap:1.5vw; flex-wrap:wrap; padding:0 4vw;
+  }
+  .parceirosFooter span{ font-size:1.7vw; opacity:0.55; font-weight:600; }
+  .parceirosFooter img{ height:3.2vh; opacity:0.85; object-fit:contain; }
+  #final .parceirosFooter{ bottom:3.5vh; }
+
+  /* ---------- PAINEL ADMIN ---------- */
+  #admin{ background:rgba(0,0,0,0.95); color:var(--cream); z-index:999; }
+  #admin h1{font-size:5vw; color:var(--gold); margin-bottom:5vh;}
+  #admin .stat{font-size:3.5vw; margin-bottom:2vh;}
+  #admin .stat b{color:var(--gold); font-size:5vw; display:block;}
+  #admin .botoes{display:flex; gap:3vw; margin-top:5vh;}
+  #admin button{
+    font-size:2.6vw; padding:2vh 3vw; border-radius:12px; border:none;
+    background:var(--red); color:#fff; font-weight:700; cursor:pointer;
+  }
+  #admin .fechar{
+    position:absolute; top:3vh; right:3vh; font-size:3vw; background:var(--blue);
+    padding:1.5vh 3vw; border-radius:12px; color:#fff; cursor:pointer;
+  }
+  #admin .atalho{font-size:2.2vw; opacity:0.6; margin-top:4vh;}
 </style>
 </head>
 <body>
@@ -151,7 +222,9 @@
   <h1 id="brandName">PASTUR</h1>
   <h2 id="brandSubtitle">Pastoral do Turismo</h2>
   <div id="idleRotator"></div>
-  <div class="cta">TOQUE PARA JOGAR</div>
+  <div class="cta" id="idleCta">PRESSIONE ENTER PARA COMEÇAR</div>
+  <div id="contadorBadge"></div>
+  <div id="overlayBotao"></div>
 </div>
 
 <!-- ============ TELA PERGUNTA ============ -->
@@ -172,6 +245,8 @@
   <div class="resultado" id="resultadoText"></div>
   <div class="resposta" id="respostaText"></div>
   <div class="curiosidade" id="curiosidadeText"></div>
+  <div class="dica">pressione ENTER para continuar</div>
+  <div class="parceirosFooter" id="parceirosFooterFeedback"></div>
 </div>
 
 <!-- ============ TELA FINAL ============ -->
@@ -182,7 +257,22 @@
   <div class="qrBox"><img id="qrImg" src="qrcode-instagram.png" alt="QR Code Instagram"></div>
   <div class="instagram" id="instaHandle">@pasturce</div>
   <div class="brinde" id="brindeText">Mostre essa tela e retire seu brinde! 🎁</div>
+  <div class="dica">pressione ENTER para voltar</div>
+  <div class="parceirosFooter" id="parceirosFooterFinal"></div>
   <div class="barra" id="barraFinal"></div>
+</div>
+
+<!-- ============ PAINEL ADMIN ============ -->
+<div id="admin" class="screen">
+  <div class="fechar" id="fecharAdmin">Fechar (ESC)</div>
+  <h1>Painel PASTUR — Estande</h1>
+  <div class="stat">Jogadores hoje<b id="statHoje">0</b></div>
+  <div class="stat">Total desde o início do evento<b id="statTotal">0</b></div>
+  <div class="botoes">
+    <button id="btnResetHoje">Zerar contador de hoje</button>
+    <button id="btnResetTotal">Zerar tudo</button>
+  </div>
+  <div class="atalho">Abrir este painel a qualquer momento: Ctrl + Alt + A</div>
 </div>
 
 <script>
@@ -193,21 +283,48 @@ const CONFIG = {
   brandName: "PASTUR",
   brandSubtitle: "Pastoral do Turismo",
   instagramHandle: "@pasturce",
-  qrImagePath: "qrcode-instagram.png",   // troque pelo arquivo do QR code real
+  qrImagePath: "qrcode-instagram.png",
   scanPrompt: "📱 Escaneie o QR Code abaixo para retirar seu brinde!",
   brindeMensagem: "Mostre essa tela e retire seu brinde! 🎁",
+  textoIdleCta: "PRESSIONE ENTER PARA COMEÇAR",
+
+  usarImagemFundo: false,   // troque pra true quando tiver a arte "pastur-tela-inicial.png" pronta
+  imagemFundo: "pastur-tela-inicial.png",
+
+  overlayBotao: { top: "57%", left: "15%", width: "70%", height: "6.5%" },
+  posicaoRotator: { top: "68%" },
+  posicaoContador: { top: "77%" },
 
   tempoPorPergunta: 10,      // segundos que a pessoa tem para responder cada pergunta
   finalScreenDuration: 25,   // segundos que a tela final fica visível (tempo pra escanear o QR)
-  feedbackDuration: 4,       // segundos que o feedback fica visível antes da próxima pergunta
+  feedbackDuration: 6,       // segundos que o feedback fica visível antes da próxima pergunta
 
   perguntasPorRodada: 5,     // quantas perguntas por sessão de jogo
+
+  esconderCursor: true,
+
+  mostrarContadorPublico: true,
+  textoContadorPublico: (n) => `${n} pessoa${n === 1 ? '' : 's'} já jogou hoje!`,
+
+  /* ---- RODAPÉ DE PARCEIROS (feedback + tela final) ---- */
+  parceiros: {
+    mostrar: true,
+    textoPrefixo: "Apoio: ",
+    // Troque cada item para { tipo: 'imagem', src: 'logo-ifce.png' } quando tiver os logos separados
+    itens: [
+      { tipo: 'texto', valor: 'Arquidiocese de Fortaleza' },
+      { tipo: 'texto', valor: 'IFCE' },
+      { tipo: 'texto', valor: 'Sesc/Senac/Fecomércio' },
+      { tipo: 'texto', valor: 'Prefeitura de Fortaleza' }
+    ]
+  },
 
   frasesIdle: [
     "A PASTUR une fé, turismo e acolhimento em um só caminho.",
     "Já pensou em conhecer os 300 anos de fé de Fortaleza?",
     "Acolher é evangelizar. Venha fazer parte dessa jornada.",
-    "Descubra os roteiros de fé da Arquidiocese de Fortaleza."
+    "Descubra os roteiros de fé da Arquidiocese de Fortaleza.",
+    "Uma parceria entre Arquidiocese, IFCE, Sesc e Prefeitura de Fortaleza."
   ],
 
   perguntas: [
@@ -414,28 +531,153 @@ const CONFIG = {
       opcoes: ["Roxo", "Verde", "Vermelho"],
       correta: 0,
       curiosidade: "As cores litúrgicas ajudam os fiéis a reconhecer o momento do calendário da Igreja."
+    },
+    {
+      charada: "Sou uma cidade cearense conhecida pela festa em homenagem à Menina Benigna. Quem sou eu?",
+      opcoes: ["Santana do Cariri", "Barbalha", "Crato"],
+      correta: 0,
+      curiosidade: "Santana do Cariri faz parte do roteiro de cidades de devoção no interior do Ceará."
+    },
+    {
+      charada: "Minha festa é celebrada em Barbalha e envolve também a tradicional Festa do Pau da Bandeira. Quem sou eu?",
+      opcoes: ["Santo Antônio", "São Francisco", "Menino Jesus"],
+      correta: 0,
+      curiosidade: "Barbalha é uma das paradas do roteiro de fé que segue para o interior do Ceará."
+    },
+    {
+      charada: "Sou uma devoção popular que mobiliza fiéis no bairro Cidade dos Funcionários, em Fortaleza. Quem sou eu?",
+      opcoes: ["Nossa Senhora da Glória", "Nossa Senhora Aparecida", "Nossa Senhora do Carmo"],
+      correta: 0,
+      curiosidade: "Faz parte do roteiro 'Fortaleza das Grandes Devoções', que reúne pontos de fé popular na cidade."
+    },
+    {
+      charada: "Sou considerada uma das igrejas mais antigas do roteiro das igrejas centenárias de Fortaleza. Quem sou eu?",
+      opcoes: ["Igreja de Nossa Senhora do Rosário", "Igreja do Cristo Rei", "Igreja de São Bernardo"],
+      correta: 0,
+      curiosidade: "O roteiro das Centenárias conta a história dos 300 anos de fé de Fortaleza."
+    },
+    {
+      charada: "Sou conhecido por um apelido curioso, ligado à minha imagem, e minha festa acontece na cidade de Caridade, no Ceará. Quem sou eu?",
+      opcoes: ["Santo Antônio sem cabeça", "São Sebastião", "São Francisco"],
+      correta: 0,
+      curiosidade: "Essa devoção tem uma das histórias mais curiosas entre os roteiros de fé do interior cearense."
+    },
+    {
+      charada: "Minha festa é celebrada na cidade de Icó, no Ceará. Quem sou eu?",
+      opcoes: ["Festa do Bom Jesus", "Festa de São Pedro", "Festa de Santa Luzia"],
+      correta: 0,
+      curiosidade: "Icó é uma das cidades que compõem o roteiro de fé que liga Fortaleza ao interior do estado."
+    },
+    {
+      charada: "Fico em Guaramiranga e sou um mosteiro ligado à Festa de Santa Luzia, celebrada em Baturité. Quem sou eu?",
+      opcoes: ["Mosteiro dos Jesuítas e Capuchinhos", "Santuário de São Francisco", "Convento das Carmelitas"],
+      correta: 0,
+      curiosidade: "Guaramiranga faz parte das rotas de fé e turismo do interior cearense."
+    },
+    {
+      charada: "Sou um dos valores da PASTUR que fala em cuidar da Casa Comum e das pessoas. Quem sou eu?",
+      opcoes: ["Sustentabilidade e Ecologia Integral", "Transparência e Ética", "Comunhão e Sinodalidade"],
+      correta: 0,
+      curiosidade: "Esse valor é inspirado na encíclica Laudato Si', do Papa Francisco."
+    },
+    {
+      charada: "Sou a área de atuação da PASTUR responsável por estruturar rotas, roteiros e sinalização com identidade católica. Quem sou eu?",
+      opcoes: ["Área Turística", "Área Ambiental", "Área Comunicacional"],
+      correta: 0,
+      curiosidade: "A PASTUR atua em seis frentes: Pastoral, Turística, Cultural, Social, Ambiental e Comunicacional."
+    },
+    {
+      charada: "Sou uma instituição de ensino técnico que apoia a PASTUR na formação de guias e profissionais do turismo religioso. Quem sou eu?",
+      opcoes: ["IFCE", "Universidade Federal do Ceará", "Colégio Militar"],
+      correta: 0,
+      curiosidade: "O IFCE é uma das instituições de ensino parceiras da PASTUR, ajudando a capacitar quem trabalha com fé e turismo."
+    },
+    {
+      charada: "Sou o memorial ligado a uma instituição de ensino técnico e preservo a história da educação profissional no Ceará. Quem sou eu?",
+      opcoes: ["Memorial do IFCE", "Museu do Ceará", "Theatro José de Alencar"],
+      correta: 0,
+      curiosidade: "O Memorial do IFCE é um dos parceiros que apoiam a valorização da cultura e da história ligadas à PASTUR."
+    },
+    {
+      charada: "Sou formado pela união entre Sesc, Senac e Fecomércio, e apoio a capacitação de quem trabalha com hospitalidade e acolhimento na PASTUR. Quem sou eu?",
+      opcoes: ["Sesc Fecomércio Senac", "IFCE", "Sebrae"],
+      correta: 0,
+      curiosidade: "O Sistema Sesc/Senac/Fecomércio apoia a formação de agentes de turismo e hospitalidade, reforçando o acolhimento como missão evangelizadora."
+    },
+    {
+      charada: "Sou o órgão da Prefeitura de Fortaleza responsável por promover o turismo na cidade, incluindo o turismo religioso. Quem sou eu?",
+      opcoes: ["Fortaleza Turismo (Prefeitura)", "Governo do Estado do Ceará", "Câmara Municipal"],
+      correta: 0,
+      curiosidade: "A Prefeitura de Fortaleza é parceira institucional da PASTUR, unindo poder público e Igreja em prol da fé e da cultura da cidade."
+    },
+    {
+      charada: "Além da Arquidiocese, a PASTUR nasce da união entre a Igreja e que outras frentes da sociedade?",
+      opcoes: ["Ensino, comércio e poder público", "Apenas empresas privadas", "Somente outras paróquias"],
+      correta: 0,
+      curiosidade: "A PASTUR é fruto de uma construção feita a várias mãos: Arquidiocese, Governo do Estado, instituições de ensino como o IFCE, o sistema Sesc/Senac/Fecomércio e a Prefeitura de Fortaleza."
     }
   ]
 };
 
 /* =========================================================
-   LÓGICA DO APLICATIVO — não precisa editar daqui pra baixo
+   CONTADOR DE JOGADORES
    ========================================================= */
-let perguntasEmbaralhadas = [];
-let indiceAtual = 0;
-let acertos = 0;
-let timers = [];
-let timerInterval = null;
+const STORAGE_KEYS = { hoje: 'pastur_jogadores_hoje', total: 'pastur_jogadores_total', data: 'pastur_ultima_data' };
 
-const el = id => document.getElementById(id);
+function dataDeHoje(){ const d = new Date(); return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; }
 
-function limparTimers(){
-  timers.forEach(t => clearTimeout(t));
-  timers = [];
-  if(timerInterval){
-    clearInterval(timerInterval);
-    timerInterval = null;
+function carregarContadores(){
+  const ultimaData = localStorage.getItem(STORAGE_KEYS.data);
+  if(ultimaData !== dataDeHoje()){
+    localStorage.setItem(STORAGE_KEYS.hoje, '0');
+    localStorage.setItem(STORAGE_KEYS.data, dataDeHoje());
   }
+  if(localStorage.getItem(STORAGE_KEYS.total) === null){
+    localStorage.setItem(STORAGE_KEYS.total, '0');
+  }
+}
+
+function registrarNovoJogador(){
+  carregarContadores();
+  const hoje = parseInt(localStorage.getItem(STORAGE_KEYS.hoje) || '0') + 1;
+  const total = parseInt(localStorage.getItem(STORAGE_KEYS.total) || '0') + 1;
+  localStorage.setItem(STORAGE_KEYS.hoje, hoje.toString());
+  localStorage.setItem(STORAGE_KEYS.total, total.toString());
+  atualizarBadge();
+}
+
+function atualizarBadge(){
+  carregarContadores();
+  const hoje = parseInt(localStorage.getItem(STORAGE_KEYS.hoje) || '0');
+  if(CONFIG.mostrarContadorPublico){
+    el('contadorBadge').style.display = 'block';
+    el('contadorBadge').textContent = CONFIG.textoContadorPublico(hoje);
+  } else {
+    el('contadorBadge').style.display = 'none';
+  }
+}
+
+function atualizarPainelAdmin(){
+  carregarContadores();
+  el('statHoje').textContent = localStorage.getItem(STORAGE_KEYS.hoje) || '0';
+  el('statTotal').textContent = localStorage.getItem(STORAGE_KEYS.total) || '0';
+}
+
+/* =========================================================
+   RODAPÉ DE PARCEIROS
+   ========================================================= */
+function montarParceirosFooter(){
+  if(!CONFIG.parceiros.mostrar) return;
+  const html = CONFIG.parceiros.itens.map(item => {
+    if(item.tipo === 'imagem'){
+      return `<img src="${item.src}" alt="">`;
+    }
+    return `<span>${item.valor}</span>`;
+  }).join('<span style="opacity:0.3">•</span>');
+
+  const prefixo = `<span style="opacity:0.7">${CONFIG.parceiros.textoPrefixo}</span>`;
+  el('parceirosFooterFeedback').innerHTML = prefixo + html;
+  el('parceirosFooterFinal').innerHTML = prefixo + html;
 }
 
 /* =========================================================
@@ -509,9 +751,32 @@ function tocarTique(){
   tocarNota(880, 0.09, 'square', 0.05, 0);
 }
 
+/* =========================================================
+   LÓGICA DO APLICATIVO
+   ========================================================= */
+let perguntasEmbaralhadas = [];
+let indiceAtual = 0;
+let acertos = 0;
+let timers = [];
+let timerInterval = null;
+let telaAtual = 'idle';
+let respostaBloqueada = false;
+
+const el = id => document.getElementById(id);
+
+function limparTimers(){
+  timers.forEach(t => clearTimeout(t));
+  timers = [];
+  if(timerInterval){
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+}
+
 function mostrarTela(id){
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   el(id).classList.add('active');
+  telaAtual = id;
 }
 
 function embaralhar(array){
@@ -527,6 +792,7 @@ function iniciarIdle(){
   limparTimers();
   pararMusica();
   mostrarTela('idle');
+  atualizarBadge();
   rotacionarFrasesIdle();
 }
 
@@ -546,6 +812,7 @@ function rotacionarFrasesIdle(){
 function iniciarJogo(){
   limparTimers();
   iniciarMusica();
+  registrarNovoJogador();
   perguntasEmbaralhadas = embaralhar(CONFIG.perguntas).slice(0, CONFIG.perguntasPorRodada);
   indiceAtual = 0;
   acertos = 0;
@@ -554,6 +821,7 @@ function iniciarJogo(){
 
 function mostrarPergunta(){
   limparTimers();
+  respostaBloqueada = false;
   const p = perguntasEmbaralhadas[indiceAtual];
   el('progressText').textContent = `Pergunta ${indiceAtual + 1} de ${perguntasEmbaralhadas.length}`;
   el('charadaText').textContent = p.charada;
@@ -561,10 +829,11 @@ function mostrarPergunta(){
   const container = el('opcoesContainer');
   container.innerHTML = '';
   const opcoesEmbaralhadas = p.opcoes.map((texto, idx) => ({texto, correta: idx === p.correta}));
-  embaralhar(opcoesEmbaralhadas).forEach(op => {
+  embaralhar(opcoesEmbaralhadas).forEach((op, i) => {
     const btn = document.createElement('button');
     btn.className = 'opcaoBtn';
-    btn.textContent = op.texto;
+    btn.dataset.num = i + 1;
+    btn.innerHTML = `<span class="numBadge">${i + 1}</span><span>${op.texto}</span>`;
     btn.onclick = () => responder(op.correta, btn, container);
     container.appendChild(btn);
   });
@@ -601,7 +870,19 @@ function iniciarTemporizador(container){
   }, 1000);
 }
 
+function responderPorNumero(num){
+  if(respostaBloqueada) return;
+  const container = el('opcoesContainer');
+  const btn = container.querySelector(`.opcaoBtn[data-num="${num}"]`);
+  if(!btn) return;
+  const p = perguntasEmbaralhadas[indiceAtual];
+  const correta = btn.textContent.includes(p.opcoes[p.correta]);
+  responder(correta, btn, container);
+}
+
 function responder(correta, btnClicado, container, esgotado){
+  if(respostaBloqueada) return;
+  respostaBloqueada = true;
   limparTimers();
   container.querySelectorAll('.opcaoBtn').forEach(b => b.onclick = null);
   const p = perguntasEmbaralhadas[indiceAtual];
@@ -623,17 +904,20 @@ function responder(correta, btnClicado, container, esgotado){
     el('curiosidadeText').textContent = p.curiosidade;
     mostrarTela('feedback');
 
-    const t2 = setTimeout(() => {
-      indiceAtual++;
-      if(indiceAtual < perguntasEmbaralhadas.length){
-        mostrarPergunta();
-      } else {
-        mostrarFinal();
-      }
-    }, CONFIG.feedbackDuration * 1000);
+    const t2 = setTimeout(avancarDoFeedback, CONFIG.feedbackDuration * 1000);
     timers.push(t2);
   }, 700);
   timers.push(t1);
+}
+
+function avancarDoFeedback(){
+  limparTimers();
+  indiceAtual++;
+  if(indiceAtual < perguntasEmbaralhadas.length){
+    mostrarPergunta();
+  } else {
+    mostrarFinal();
+  }
 }
 
 function mostrarFinal(){
@@ -656,14 +940,105 @@ function mostrarFinal(){
   timers.push(t);
 }
 
-/* Aplica textos de marca configuráveis */
-el('brandName').textContent = CONFIG.brandName;
-el('brandSubtitle').textContent = CONFIG.brandSubtitle;
+/* =========================================================
+   CONTROLE POR TECLADO — principal forma de operar o totem
+   ========================================================= */
+document.addEventListener('keydown', (e) => {
+  if(e.ctrlKey && e.altKey && e.key.toLowerCase() === 'a'){
+    e.preventDefault();
+    limparTimers();
+    pararMusica();
+    atualizarPainelAdmin();
+    mostrarTela('admin');
+    return;
+  }
 
-/* Início: tocar em qualquer lugar da tela idle começa o jogo */
+  if(telaAtual === 'admin'){
+    if(e.key === 'Escape') iniciarIdle();
+    return;
+  }
+
+  if(telaAtual === 'idle'){
+    if(e.key === 'Enter' || e.key === ' '){
+      e.preventDefault();
+      iniciarJogo();
+    }
+    return;
+  }
+
+  if(telaAtual === 'question'){
+    if(['1','2','3'].includes(e.key)){
+      responderPorNumero(parseInt(e.key));
+    }
+    return;
+  }
+
+  if(telaAtual === 'feedback'){
+    if(e.key === 'Enter' || e.key === ' '){
+      e.preventDefault();
+      avancarDoFeedback();
+    }
+    return;
+  }
+
+  if(telaAtual === 'final'){
+    if(e.key === 'Enter' || e.key === ' '){
+      e.preventDefault();
+      iniciarIdle();
+    }
+    return;
+  }
+});
+
+/* Cliques e toques continuam funcionando como reserva */
 el('idle').addEventListener('click', iniciarJogo);
 el('idle').addEventListener('touchstart', iniciarJogo);
+el('fecharAdmin').addEventListener('click', iniciarIdle);
 
+el('btnResetHoje').addEventListener('click', () => {
+  if(confirm('Zerar o contador de hoje?')){
+    localStorage.setItem(STORAGE_KEYS.hoje, '0');
+    atualizarPainelAdmin();
+  }
+});
+
+el('btnResetTotal').addEventListener('click', () => {
+  if(confirm('Isso vai zerar TODOS os números, inclusive o total geral. Confirma?')){
+    localStorage.setItem(STORAGE_KEYS.hoje, '0');
+    localStorage.setItem(STORAGE_KEYS.total, '0');
+    atualizarPainelAdmin();
+  }
+});
+
+/* =========================================================
+   APLICA CONFIGURAÇÕES NA TELA
+   ========================================================= */
+el('brandName').textContent = CONFIG.brandName;
+el('brandSubtitle').textContent = CONFIG.brandSubtitle;
+el('idleCta').textContent = CONFIG.textoIdleCta;
+if(CONFIG.esconderCursor) document.body.classList.add('esconderCursor');
+
+if(CONFIG.usarImagemFundo){
+  const idleEl = el('idle');
+  idleEl.classList.add('comImagem');
+  idleEl.style.backgroundImage = `url('${CONFIG.imagemFundo}')`;
+
+  const overlay = el('overlayBotao');
+  overlay.style.top = CONFIG.overlayBotao.top;
+  overlay.style.left = CONFIG.overlayBotao.left;
+  overlay.style.width = CONFIG.overlayBotao.width;
+  overlay.style.height = CONFIG.overlayBotao.height;
+  overlay.addEventListener('click', iniciarJogo);
+  overlay.addEventListener('touchstart', iniciarJogo);
+
+  el('idleRotator').style.top = CONFIG.posicaoRotator.top;
+  el('contadorBadge').style.top = CONFIG.posicaoContador.top;
+  el('contadorBadge').style.left = '50%';
+  el('contadorBadge').style.transform = 'translateX(-50%)';
+}
+
+montarParceirosFooter();
+carregarContadores();
 iniciarIdle();
 </script>
 </body>

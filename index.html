@@ -44,7 +44,6 @@
     background-size:cover;
     background-position:center;
     padding:0;
-    position:relative;
   }
   #idle .logo, #idle h1, #idle h2, #idle .cta{ display:none; }
   #idle:not(.comImagem) .logo,
@@ -288,12 +287,12 @@ const CONFIG = {
   brindeMensagem: "Mostre essa tela e retire seu brinde! 🎁",
   textoIdleCta: "PRESSIONE ENTER PARA COMEÇAR",
 
-  usarImagemFundo: false,   // troque pra true quando tiver a arte "pastur-tela-inicial.png" pronta
-  imagemFundo: "pastur-tela-inicial.png",
+  usarImagemFundo: true,
+  imagemFundo: "PASTUR.png",
 
-  overlayBotao: { top: "57%", left: "15%", width: "70%", height: "6.5%" },
-  posicaoRotator: { top: "68%" },
-  posicaoContador: { top: "77%" },
+  overlayBotao: { top: "57.7%", left: "15.2%", width: "69.5%", height: "11.9%" },
+  posicaoRotator: { top: "73%" },
+  posicaoContador: { top: "95%" },
 
   tempoPorPergunta: 10,      // segundos que a pessoa tem para responder cada pergunta
   finalScreenDuration: 25,   // segundos que a tela final fica visível (tempo pra escanear o QR)
@@ -305,7 +304,7 @@ const CONFIG = {
   esconderCursor: true,
 
   mostrarContadorPublico: true,
-  textoContadorPublico: (n) => `${n} pessoa${n === 1 ? '' : 's'} já jogou hoje!`,
+  textoContadorPublico: (n) => `${n} pessoa${n === 1 ? '' : 's'} já ${n === 1 ? 'jogou' : 'jogaram'} hoje!`,
 
   /* ---- RODAPÉ DE PARCEIROS (feedback + tela final) ---- */
   parceiros: {
@@ -1058,8 +1057,7 @@ if(CONFIG.usarImagemFundo){
   overlay.style.left = CONFIG.overlayBotao.left;
   overlay.style.width = CONFIG.overlayBotao.width;
   overlay.style.height = CONFIG.overlayBotao.height;
-  overlay.addEventListener('click', iniciarJogo);
-  overlay.addEventListener('touchstart', iniciarJogo);
+  // sem listener próprio: o clique já é capturado por propagação pelo listener em #idle
 
   el('idleRotator').style.top = CONFIG.posicaoRotator.top;
   el('contadorBadge').style.top = CONFIG.posicaoContador.top;

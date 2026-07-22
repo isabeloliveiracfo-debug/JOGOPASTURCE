@@ -300,6 +300,7 @@ const CONFIG = {
   feedbackDuration: 6,       // segundos que o feedback fica visível antes da próxima pergunta
 
   perguntasPorRodada: 5,     // quantas perguntas por sessão de jogo
+  perguntasInstitucionaisPorRodada: 2,   // quantas dessas 5 vêm do bloco de parceiros/instituições, intercalando entre jogadores
 
   esconderCursor: true,
 
@@ -590,31 +591,36 @@ const CONFIG = {
       charada: "Sou uma instituição de ensino técnico que apoia a PASTUR na formação de guias e profissionais do turismo religioso. Quem sou eu?",
       opcoes: ["IFCE", "Universidade Federal do Ceará", "Colégio Militar"],
       correta: 0,
-      curiosidade: "O IFCE é uma das instituições de ensino parceiras da PASTUR, ajudando a capacitar quem trabalha com fé e turismo."
+      curiosidade: "O IFCE é uma das instituições de ensino parceiras da PASTUR, ajudando a capacitar quem trabalha com fé e turismo.",
+      institucional: true
     },
     {
       charada: "Sou o memorial ligado a uma instituição de ensino técnico e preservo a história da educação profissional no Ceará. Quem sou eu?",
       opcoes: ["Memorial do IFCE", "Museu do Ceará", "Theatro José de Alencar"],
       correta: 0,
-      curiosidade: "O Memorial do IFCE é um dos parceiros que apoiam a valorização da cultura e da história ligadas à PASTUR."
+      curiosidade: "O Memorial do IFCE é um dos parceiros que apoiam a valorização da cultura e da história ligadas à PASTUR.",
+      institucional: true
     },
     {
       charada: "Sou formado pela união entre Sesc, Senac e Fecomércio, e apoio a capacitação de quem trabalha com hospitalidade e acolhimento na PASTUR. Quem sou eu?",
       opcoes: ["Sesc Fecomércio Senac", "IFCE", "Sebrae"],
       correta: 0,
-      curiosidade: "O Sistema Sesc/Senac/Fecomércio apoia a formação de agentes de turismo e hospitalidade, reforçando o acolhimento como missão evangelizadora."
+      curiosidade: "O Sistema Sesc/Senac/Fecomércio apoia a formação de agentes de turismo e hospitalidade, reforçando o acolhimento como missão evangelizadora.",
+      institucional: true
     },
     {
       charada: "Sou o órgão da Prefeitura de Fortaleza responsável por promover o turismo na cidade, incluindo o turismo religioso. Quem sou eu?",
       opcoes: ["Fortaleza Turismo (Prefeitura)", "Governo do Estado do Ceará", "Câmara Municipal"],
       correta: 0,
-      curiosidade: "A Prefeitura de Fortaleza é parceira institucional da PASTUR, unindo poder público e Igreja em prol da fé e da cultura da cidade."
+      curiosidade: "A Prefeitura de Fortaleza é parceira institucional da PASTUR, unindo poder público e Igreja em prol da fé e da cultura da cidade.",
+      institucional: true
     },
     {
       charada: "Além da Arquidiocese, a PASTUR nasce da união entre a Igreja e que outras frentes da sociedade?",
       opcoes: ["Ensino, comércio e poder público", "Apenas empresas privadas", "Somente outras paróquias"],
       correta: 0,
-      curiosidade: "A PASTUR é fruto de uma construção feita a várias mãos: Arquidiocese, Governo do Estado, instituições de ensino como o IFCE, o sistema Sesc/Senac/Fecomércio e a Prefeitura de Fortaleza."
+      curiosidade: "A PASTUR é fruto de uma construção feita a várias mãos: Arquidiocese, Governo do Estado, instituições de ensino como o IFCE, o sistema Sesc/Senac/Fecomércio e a Prefeitura de Fortaleza.",
+      institucional: true
     }
   ]
 };
@@ -788,6 +794,30 @@ function embaralhar(array){
   return a;
 }
 
+/* =========================================================
+   SORTEIO DE PERGUNTAS — intercala as institucionais entre jogadores
+   ========================================================= */
+const perguntasInstitucionais = CONFIG.perguntas.filter(p => p.institucional);
+const perguntasGerais = CONFIG.perguntas.filter(p => !p.institucional);
+
+let sacolaInstitucional = [];
+function tirarDaSacolaInstitucional(qtd){
+  const resultado = [];
+  for(let i = 0; i < qtd; i++){
+    if(sacolaInstitucional.length === 0){
+      sacolaInstitucional = embaralhar(perguntasInstitucionais);
+    }
+    resultado.push(sacolaInstitucional.shift());
+  }
+  return resultado;
+}
+
+function montarPerguntasDaRodada(){
+  const institucionais = tirarDaSacolaInstitucional(CONFIG.perguntasInstitucionaisPorRodada);
+  const gerais = embaralhar(perguntasGerais).slice(0, CONFIG.perguntasPorRodada - CONFIG.perguntasInstitucionaisPorRodada);
+  return embaralhar([...institucionais, ...gerais]);
+}
+
 function iniciarIdle(){
   limparTimers();
   pararMusica();
@@ -813,7 +843,7 @@ function iniciarJogo(){
   limparTimers();
   iniciarMusica();
   registrarNovoJogador();
-  perguntasEmbaralhadas = embaralhar(CONFIG.perguntas).slice(0, CONFIG.perguntasPorRodada);
+  perguntasEmbaralhadas = montarPerguntasDaRodada();
   indiceAtual = 0;
   acertos = 0;
   mostrarPergunta();
